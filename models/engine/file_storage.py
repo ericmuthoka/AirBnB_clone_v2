@@ -28,7 +28,7 @@ class FileStorage:
         """
         Returns the dictionary __objects
         """
-        if not cls:
+        if cls is None:
             return self.__objects
         elif type(cls) == str:
             return {k: v for k, v in self.__objects.items()
@@ -72,8 +72,10 @@ class FileStorage:
         Deletes obj from __objects if it’s inside
         """
         if obj is not None:
-            del self.__objects[obj.__class__.__name__ + '.' + obj.id]
-            self.save()
+            key = obj.__class__.__name__ + '.' + obj.id
+            if key in self.__objects:
+                del self.__objects[key]
+                self.save()
 
     def close(self):
         """

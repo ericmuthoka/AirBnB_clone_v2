@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
-# Bash script to set up web servers for the deployment of web_static
+# Bash script that sets up web servers for the deployment of web_static
+
+# Update package information
+sudo apt-get update
 
 # Install Nginx if not already installed
-if ! command -v nginx &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get -y install nginx
-fi
+sudo apt-get -y install nginx
+
+# Allow HTTP traffic through UFW
+sudo ufw allow 'Nginx HTTP'
 
 # Create necessary folders if they don't exist
 sudo mkdir -p /data/web_static/releases/test
 sudo mkdir -p /data/web_static/shared
-sudo mkdir -p /data/web_static/current
 
 # Create a fake HTML file for testing
 echo "<html>
   <head>
-    <title>Test Page</title>
   </head>
   <body>
-    <p>This is a test page.</p>
+    Holberton School
   </body>
 </html>" | sudo tee /data/web_static/releases/test/index.html
 
@@ -27,21 +28,53 @@ sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
 sudo chown -R ubuntu:ubuntu /data/
 
 # Update Nginx configuration
-config_content="
-server {
-    listen 80;
-    server_name _;
-
-    location /hbnb_static {
-        alias /data/web_static/current/;
-    }
-
-    location / {
-        return 301 /hbnb_static/index.html;
-    }
+config_content="location /hbnb_static {
+    alias /data/web_static/current/;
+    index index.html;
 }"
 
-echo "$config_content" | sudo tee /etc/nginx/sites-available/default
+# Add the location block to the Nginx default configuration
+sudo sed -i "/listen 80 default_server/a $config_content" /etc/nginx/sites-enabled/default
+
+# Restart Nginx
+sudo service nginx restart
+#!/usr/bin/env bash
+# Bash script that sets up web servers for the deployment of web_static
+
+# Update package information
+sudo apt-get update
+
+# Install Nginx if not already installed
+sudo apt-get -y install nginx
+
+# Allow HTTP traffic through UFW
+sudo ufw allow 'Nginx HTTP'
+
+# Create necessary folders if they don't exist
+sudo mkdir -p /data/web_static/releases/test
+sudo mkdir -p /data/web_static/shared
+
+# Create a fake HTML file for testing
+echo "<html>
+  <head>
+  </head>
+  <body>
+    Holberton School
+  </body>
+</html>" | sudo tee /data/web_static/releases/test/index.html
+
+# Create symbolic link and update ownership
+sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
+sudo chown -R ubuntu:ubuntu /data/
+
+# Update Nginx configuration
+config_content="location /hbnb_static {
+    alias /data/web_static/current/;
+    index index.html;
+}"
+
+# Add the location block to the Nginx default configuration
+sudo sed -i "/listen 80 default_server/a $config_content" /etc/nginx/sites-enabled/default
 
 # Restart Nginx
 sudo service nginx restart

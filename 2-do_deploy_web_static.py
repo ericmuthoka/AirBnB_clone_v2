@@ -15,6 +15,7 @@ env.key_filename = [
     '/path/to/your/ssh/private/key'
 ]
 
+
 def do_deploy(archive_path):
     """
     Distribute an archive to a web server.

@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from fabric.api import local, runs_once
 
+
 @runs_once
 def do_pack():
     """Create a .tgz archive of static files."""

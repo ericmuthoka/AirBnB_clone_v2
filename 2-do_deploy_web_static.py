@@ -3,49 +3,65 @@
 Fabric script for distributing an archive to web servers.
 """
 
-from datetime import datetime
-from fabric.api import *
 import os
+from fabric.api import put, run, env
 
-
-env.hosts = ["52.91.121.146", "3.85.136.181"]
-env.user = "ubuntu"
-
-
-def do_pack():
-    """
-    Create an archive and return the archive path if successful.
-    """
-    local("mkdir -p versions")
-    date = datetime.now().strftime("%Y%m%d%H%M%S")
-    archive_path = "versions/web_static_{}.tgz".format(date)
-    tar_command = local("tar -cvzf {} web_static".format(archive_path))
-
-    if tar_command.succeeded:
-        return archive_path
-    else:
-        return None
-
+env.hosts = [
+    '<your_web_server_1_ip>',
+    '<your_web_server_2_ip>'
+]
+env.user = 'your_username'
+env.key_filename = [
+    '/path/to/your/ssh/private/key'
+]
 
 def do_deploy(archive_path):
     """
-    Distribute the archive to the web servers.
+    Distribute an archive to a web server.
+
+    Args:
+        archive_path (str): The path of the archive to distribute.
+
+    Returns:
+        If the file doesn't exist at archive_path or an error occurs - False.
+        Otherwise - True.
     """
-    if os.path.exists(archive_path):
-        archive_file = archive_path[9:]
-        newest_version = "/data/web_static/releases/" + archive_file[:-4]
-        archive_file = "/tmp/" + archive_file
-        put(archive_path, "/tmp/")
-        run("sudo mkdir -p {}".format(newest_version))
-        run("sudo tar -xzf {} -C {}/".format(archive_file, newest_version))
-        run("sudo rm {}".format(archive_file))
-        run("sudo mv {}/web_static/* {}".format(newest_version,
-                                                newest_version))
-        run("sudo rm -rf {}/web_static".format(newest_version))
+    if not os.path.exists(archive_path):
+        print("File doesn't exist at {}".format(archive_path))
+        return False
+
+    try:
+        file_name = os.path.basename(archive_path)
+        folder_name = file_name.split('.')[0]
+        remote_path = "/tmp/{}".format(file_name)
+        release_path = "/data/web_static/releases/{}".format(folder_name)
+
+        # Upload the archive to /tmp/ directory on the server
+        put(archive_path, remote_path)
+
+        # Create the release directory
+        run("sudo mkdir -p {}".format(release_path))
+
+        # Uncompress the archive to the release directory
+        run("sudo tar -xzf {} -C {}/".format(remote_path, release_path))
+
+        # Remove the uploaded archive
+        run("sudo rm {}".format(remote_path))
+
+        # Move contents to the correct directory
+        run("sudo mv {}/web_static/* {}/".format(release_path, release_path))
+
+        # Remove the web_static directory
+        run("sudo rm -rf {}/web_static".format(release_path))
+
+        # Remove the current symbolic link
         run("sudo rm -rf /data/web_static/current")
-        run("sudo ln -s {} /data/web_static/current".format(newest_version))
+
+        # Create a new symbolic link
+        run("sudo ln -s {} /data/web_static/current".format(release_path))
 
         print("New version deployed!")
         return True
-
-    return False
+    except Exception as e:
+        print("An error occurred: {}".format(str(e)))
+        return False

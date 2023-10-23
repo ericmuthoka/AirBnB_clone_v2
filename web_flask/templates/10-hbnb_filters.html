@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>HBNB</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/3-footer.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/3-header.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/4-common.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/6-filters.css') }}">
+</head>
+<body>
+    <header class="clearfix">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}">
+        </div>
+    </header>
+    <section class="filters">
+        <h1 class="title">Places</h1>
+        <div class="places-search">
+            <h3>States</h3>
+            <div class="popover">
+                <input type="text" placeholder="Filter by State" data-popover="states" data-no-popover="amenities">
+                <button>+</button>
+                <div class="popover-content">
+                    <h4>&nbsp;</h4>
+                    <div class="state-content">
+                        {% for state in states %}
+                            <label class="popover-check">
+                                <input type="checkbox" class="popover-state">
+                                <span>{{ state.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="popover">
+                <input type="text" placeholder="Filter by City" data-popover="cities" data-no-popover="amenities">
+                <button>+</button>
+                <div class="popover-content">
+                    <h4>&nbsp;</h4>
+                    <div class="cities-content">
+                        {% for city in cities %}
+                            <label class="popover-check">
+                                <input type="checkbox" class="popover-city">
+                                <span>{{ city.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="popover">
+                <input type="text" placeholder="Filter by Amenity" data-popover="amenities" data-no-popover="cities">
+                <button>+</button>
+                <div class="popover-content">
+                    <h4>&nbsp;</h4>
+                    <div class="amenities-content">
+                        {% for amenity in amenities %}
+                            <label class="popover-check">
+                                <input type="checkbox" class="popover-amenity">
+                                <span>{{ amenity.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
